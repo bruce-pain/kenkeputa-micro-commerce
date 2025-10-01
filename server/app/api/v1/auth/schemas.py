@@ -2,12 +2,16 @@ from typing import Annotated
 
 from pydantic import BaseModel, StringConstraints, EmailStr
 from app.core.base.schema import BaseResponseModel
+from enum import Enum
 
+# user role enum
+class UserRole(str, Enum):
+    ADMIN = "admin"
+    USER = "user"
 
 class RegisterRequest(BaseModel):
     password: str
     email: Annotated[EmailStr, StringConstraints(max_length=254)]
-    username: Annotated[str, StringConstraints(max_length=70)]
 
 
 class LoginRequest(BaseModel):
@@ -24,8 +28,8 @@ class TokenRefreshResponse(BaseResponseModel):
 
 class AuthResponseData(BaseModel):
     id: str
-    username: str
     email: EmailStr
+    role: UserRole = UserRole.USER
 
 
 class AuthResponse(BaseResponseModel):

@@ -36,14 +36,14 @@ def register(
 
     service = UserService(db=db)
 
-    user = service.register(db=db, schema=schema)
+    user = service.register(schema=schema)
 
     # Create access and refresh tokens
     access_token = jwt_helpers.create_jwt_token("access", user.id)
     refresh_token = jwt_helpers.create_jwt_token("refresh", user.id)
 
     response_data = schemas.AuthResponseData(
-        id=user.id, username=user.username, email=user.email
+        id=user.id, email=user.email, role=user.role
     )
 
     return schemas.AuthResponse(
@@ -76,14 +76,14 @@ def login(
 
     service = UserService(db=db)
 
-    user = service.authenticate(db=db, schema=schema)
+    user = service.authenticate(schema=schema)
 
     # Create access and refresh tokens
     access_token = jwt_helpers.create_jwt_token("access", user.id)
     refresh_token = jwt_helpers.create_jwt_token("refresh", user.id)
 
     response_data = schemas.AuthResponseData(
-        id=user.id, username=user.username, email=user.email
+        id=user.id, email=user.email, role=user.role
     )
 
     return schemas.AuthResponse(
@@ -131,7 +131,7 @@ def refresh_token(schema: schemas.TokenRefreshRequest):
 )
 def get_user(current_user: Annotated[User, Depends(get_current_user)]):
     user_schema = schemas.AuthResponseData(
-        id=current_user.id, username=current_user.username, email=current_user.email
+        id=current_user.id, email=current_user.email, role=current_user.role
     )
 
     return schemas.UserResponse(
