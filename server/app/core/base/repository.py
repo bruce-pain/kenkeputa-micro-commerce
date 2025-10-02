@@ -1,12 +1,13 @@
 from typing import Generic, TypeVar, Type, Optional, List
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, Query
 
 from app.core.base.model import BaseTableModel
+from app.core.base.schema import PaginatedResponse
 
-Model = TypeVar("T", bound=BaseTableModel)
+T = TypeVar("T", bound=BaseTableModel)
 
 
-class BaseRepository(Generic[Model]):
+class BaseRepository(Generic[T]):
     """
     Base repository class for CRUD operations.
     This class provides a generic interface for performing CRUD operations on SQLAlchemy models.
@@ -16,11 +17,11 @@ class BaseRepository(Generic[Model]):
         db (Session): The SQLAlchemy session.
     """
 
-    def __init__(self, model: Type[Model], db: Session):
+    def __init__(self, model: Type[T], db: Session):
         self.model = model
         self.db = db
 
-    def create(self, obj: Model) -> Model:
+    def create(self, obj: T) -> T:
         """Create a new object of the model.
         Args:
             obj (Model): The object to be created.
@@ -33,7 +34,7 @@ class BaseRepository(Generic[Model]):
         self.db.refresh(obj)
         return obj
 
-    def get(self, id: str) -> Optional[Model]:
+    def get(self, id: str) -> Optional[T]:
         """Get an object of the model by id.
         Args:
             id (str): The id of the object.
@@ -43,7 +44,7 @@ class BaseRepository(Generic[Model]):
 
         return self.db.query(self.model).filter(self.model.id == id).first()
 
-    def get_all(self) -> List[Model]:
+    def get_all(self) -> List[T]:
         """Get all objects of the model.
 
         This method retrieves all records from the database for the current model.
@@ -54,7 +55,7 @@ class BaseRepository(Generic[Model]):
 
         return self.db.query(self.model).all()
 
-    def update(self, obj: Model) -> Model:
+    def update(self, obj: T) -> Optional[T]:
         """Update an existing object of the model.
 
         This method updates an existing record in the database with the provided object's data.
@@ -67,7 +68,7 @@ class BaseRepository(Generic[Model]):
             Model: The updated object if successful, None if the object wasn't found.
         """
 
-        existing_obj = self.get(obj.id)
+        existing_obj = self.get(str(obj.id))
         if existing_obj:
             for key, value in obj.__dict__.items():
                 setattr(existing_obj, key, value)
@@ -94,4 +95,33 @@ class BaseRepository(Generic[Model]):
             self.db.commit()
             return True
         return False
+    
 
+    def paginate(
+        self, query: Query[T], page: int, page_size: int
+    ) -> PaginatedResponse:
+        """Paginate the results of a query.
+
+        Args:
+            query (Query[T]): The SQLAlchemy query object to paginate.
+            page (int): The page number to retrieve.
+            page_size (int): The number of items per page.
+
+        Returns:
+            PaginatedResponse: A PaginatedResponse object containing pagination information and the list of items for the requested page.
+        """
+
+        # get total pages
+        total_pages = (query.count() + page_size - 1) // page_size
+
+        # return a dict with pagination info
+        if page > total_pages and total_pages != 0:
+            page = total_pages
+
+        return PaginatedResponse(
+            total_items=query.count(),
+            total_pages=total_pages,
+            current_page=page,
+            page_size=page_size,
+            items=query.offset((page - 1) * page_size).limit(page_size).all(),
+        )
