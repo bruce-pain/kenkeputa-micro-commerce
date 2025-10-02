@@ -45,3 +45,25 @@ def get_current_user(
         raise credentials_exception
 
     return user
+
+def get_current_admin_user(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    """Dependency to get current logged in admin user
+    Useful for protecting routes and restricting their access to only
+    authenticated admin users
+
+    Args:
+        current_user (Annotated[User, Depends): Current logged in user
+
+    Returns:
+        User: Logged in admin User object
+    """
+
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=response_messages.ADMIN_PRIVILEGES_REQUIRED,
+        )
+
+    return current_user

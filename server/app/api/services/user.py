@@ -55,7 +55,7 @@ class UserService:
                 detail="Invalid email",
             )
 
-        if not password_utils.verify_password(schema.password, user.password):
+        if not password_utils.verify_password(schema.password, str(user.password)):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid password",
