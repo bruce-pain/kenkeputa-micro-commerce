@@ -2,7 +2,7 @@ from typing import Annotated
 from decimal import Decimal
 
 from pydantic import BaseModel, StringConstraints
-from app.core.base.schema import BaseResponseModel
+from app.core.base.schema import BaseResponseModel, PaginatedResponseModel
 
 
 class ProductBase(BaseModel):
@@ -31,5 +31,5 @@ class ProductResponse(BaseResponseModel):
     data: ProductResponseData
 
 
-class ProductListResponse(BaseResponseModel):
-    data: list[ProductResponseData]
+class ProductListResponse(PaginatedResponseModel):
+    pass

@@ -60,7 +60,7 @@ def get_current_admin_user(
         User: Logged in admin User object
     """
 
-    if not current_user.is_admin:
+    if not current_user.role == "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail=response_messages.ADMIN_PRIVILEGES_REQUIRED,
