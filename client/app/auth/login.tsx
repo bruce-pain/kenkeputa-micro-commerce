@@ -37,7 +37,7 @@ export default function Login() {
 
       Alert.alert("Success", response.message);
       // Navigate to main app (you'll create this later)
-      router.replace("../(tabs)/profile");
+      router.replace("../(tabs)/products");
     } catch (error) {
       const apiError = error as ApiError;
       Alert.alert("Login Failed", apiError.message || "An error occurred");

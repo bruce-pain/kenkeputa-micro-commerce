@@ -13,6 +13,18 @@ export default function RootLayout() {
                 options={{ title: "Register", headerShown: false }}  
             />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen 
+                name="products/[id]" 
+                options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+                name="products/create" 
+                options={{ headerShown: false }} 
+            />
+            <Stack.Screen 
+                name="products/edit/[id]" 
+                options={{ headerShown: false }} 
+            />
         </Stack>
     );
 }

@@ -48,7 +48,7 @@ export default function Register() {
 
       Alert.alert("Success", response.message);
       // Navigate to main app
-      router.replace("../(tabs)/profile");
+      router.replace("../(tabs)/products");
     } catch (error) {
       const apiError = error as ApiError;
       Alert.alert("Registration Failed", apiError.message || "An error occurred");
