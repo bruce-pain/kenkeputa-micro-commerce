@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Modal,
 } from "react-native";
 import { useState, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -21,6 +22,9 @@ export default function ProductDetail() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showQuantityModal, setShowQuantityModal] = useState(false);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   useEffect(() => {
     checkUserRole();
@@ -74,6 +78,31 @@ export default function ProductDetail() {
     );
   };
 
+  const handleAddToCart = async () => {
+    if (!product) return;
+
+    if (selectedQuantity > product.stock) {
+      Alert.alert("Error", "Quantity exceeds available stock");
+      return;
+    }
+
+    setAddingToCart(true);
+    try {
+      const response = await apiService.addToCart({
+        product_id: id!,
+        quantity: selectedQuantity,
+      });
+      Alert.alert("Success", response.message);
+      setShowQuantityModal(false);
+      setSelectedQuantity(1);
+    } catch (error) {
+      const apiError = error as ApiError;
+      Alert.alert("Error", apiError.message || "Failed to add to cart");
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -103,9 +132,11 @@ export default function ProductDetail() {
       <ScrollView style={styles.content}>
         <View style={styles.card}>
           <Text style={styles.productName}>{product.name}</Text>
-          
+
           <View style={styles.priceContainer}>
-            <Text style={styles.price}>${parseFloat(product.price.toString()).toFixed(2)}</Text>
+            <Text style={styles.price}>
+              ${parseFloat(product.price.toString()).toFixed(2)}
+            </Text>
             <View
               style={[
                 styles.stockBadge,
@@ -113,7 +144,9 @@ export default function ProductDetail() {
               ]}
             >
               <Text style={styles.stockText}>
-                {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                {product.stock > 0
+                  ? `${product.stock} in stock`
+                  : "Out of stock"}
               </Text>
             </View>
           </View>
@@ -144,6 +177,19 @@ export default function ProductDetail() {
           </View>
         </View>
 
+        {/* Add to Cart Button for non-admin users */}
+        {!isAdmin && product.stock > 0 && (
+          <View style={styles.card}>
+            <TouchableOpacity
+              style={styles.addToCartButton}
+              onPress={() => setShowQuantityModal(true)}
+            >
+              <Ionicons name="cart-outline" size={20} color="#ffffff" />
+              <Text style={styles.addToCartButtonText}>Add to Cart</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {isAdmin && (
           <View style={styles.adminActions}>
             <TouchableOpacity
@@ -161,6 +207,69 @@ export default function ProductDetail() {
           </View>
         )}
       </ScrollView>
+
+      {/* Quantity Modal */}
+      <Modal
+        visible={showQuantityModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowQuantityModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Select Quantity</Text>
+              <TouchableOpacity onPress={() => setShowQuantityModal(false)}>
+                <Ionicons name="close" size={24} color="#000000" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.quantityContainer}>
+              <TouchableOpacity
+                style={styles.quantityButton}
+                onPress={() =>
+                  setSelectedQuantity(Math.max(1, selectedQuantity - 1))
+                }
+              >
+                <Ionicons name="remove" size={24} color="#000000" />
+              </TouchableOpacity>
+              <Text style={styles.quantityText}>{selectedQuantity}</Text>
+              <TouchableOpacity
+                style={styles.quantityButton}
+                onPress={() =>
+                  setSelectedQuantity(
+                    Math.min(product?.stock || 1, selectedQuantity + 1)
+                  )
+                }
+              >
+                <Ionicons name="add" size={24} color="#000000" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.stockInfo}>
+              Available: {product?.stock || 0} units
+            </Text>
+
+            <TouchableOpacity
+              style={[
+                styles.confirmButton,
+                addingToCart && styles.confirmButtonDisabled,
+              ]}
+              onPress={handleAddToCart}
+              disabled={addingToCart}
+            >
+              {addingToCart ? (
+                <ActivityIndicator color="#ffffff" />
+              ) : (
+                <>
+                  <Ionicons name="checkmark" size={20} color="#ffffff" />
+                  <Text style={styles.confirmButtonText}>Add to Cart</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -316,6 +425,87 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   deleteButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  addToCartButton: {
+    flexDirection: "row",
+    backgroundColor: "#000000",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  addToCartButtonText: {
+    color: "#ffffff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: "#ffffff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 24,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#000000",
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 32,
+    marginBottom: 16,
+  },
+  quantityButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#f5f5f5",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  quantityText: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#000000",
+    minWidth: 60,
+    textAlign: "center",
+  },
+  stockInfo: {
+    textAlign: "center",
+    fontSize: 14,
+    color: "#666666",
+    marginBottom: 24,
+  },
+  confirmButton: {
+    flexDirection: "row",
+    backgroundColor: "#000000",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  confirmButtonDisabled: {
+    opacity: 0.6,
+  },
+  confirmButtonText: {
     color: "#ffffff",
     fontSize: 16,
     fontWeight: "600",

@@ -6,6 +6,12 @@ import {
   ProductCreateRequest,
   ProductUpdateRequest,
 } from "@/types/product";
+import {
+  CartItemListResponse,
+  CartItemResponse,
+  AddToCartRequest,
+  UpdateCartItemRequest,
+} from "@/types/cart";
 import axios, { AxiosRequestConfig } from "axios";
 import { storage } from "@/utils/storage";
 
@@ -99,6 +105,42 @@ class ApiService {
 
   async deleteProduct(productId: string): Promise<void> {
     return this.request<void>(`/api/v1/products/${productId}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Cart methods
+  async getCart(): Promise<CartItemListResponse> {
+    return this.request<CartItemListResponse>("/api/v1/cart", {
+      method: "GET",
+    });
+  }
+
+  async addToCart(data: AddToCartRequest): Promise<CartItemResponse> {
+    return this.request<CartItemResponse>("/api/v1/cart", {
+      method: "POST",
+      data,
+    });
+  }
+
+  async updateCartItem(
+    itemId: string,
+    data: UpdateCartItemRequest
+  ): Promise<CartItemResponse> {
+    return this.request<CartItemResponse>(`/api/v1/cart/${itemId}`, {
+      method: "PUT",
+      data,
+    });
+  }
+
+  async removeCartItem(itemId: string): Promise<void> {
+    return this.request<void>(`/api/v1/cart/${itemId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async clearCart(): Promise<void> {
+    return this.request<void>("/api/v1/cart", {
       method: "DELETE",
     });
   }
