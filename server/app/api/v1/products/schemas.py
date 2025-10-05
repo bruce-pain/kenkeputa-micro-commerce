@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from decimal import Decimal
 
 from pydantic import BaseModel, StringConstraints
@@ -7,9 +7,9 @@ from app.core.base.schema import BaseResponseModel, PaginatedResponseModel
 
 class ProductBase(BaseModel):
     name: Annotated[str, StringConstraints(max_length=255)]
-    description: str | None = None 
+    description: Optional[str] = None
     price: Decimal
-    stock: int = 0 
+    stock: int = 0
 
 
 class ProductCreateRequest(ProductBase):
@@ -17,10 +17,10 @@ class ProductCreateRequest(ProductBase):
 
 
 class ProductUpdateRequest(BaseModel):
-    name: Annotated[str, StringConstraints(max_length=255)] | None = None
-    description: str | None = None
-    price: Decimal | None = None
-    stock: int | None = None
+    name: Optional[Annotated[str, StringConstraints(max_length=255)]] = None
+    description: Optional[str] = None
+    price: Optional[Decimal] = None
+    stock: Optional[int] = None
 
 
 class ProductResponseData(ProductBase):
