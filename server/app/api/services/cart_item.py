@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 
 from app.api.v1.cart_items import schemas
 from app.api.models.cart_item import CartItem
-from app.api.models.product import Product
 from app.api.models.user import User
 from app.api.repositories.cart_item import CartItemRepository
 from app.api.repositories.product import ProductRepository
