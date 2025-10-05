@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 from typing import Annotated
 
-from app.api.models.product import Product
 from app.api.models.user import User
 from app.api.services.product import ProductService
 from app.api.v1.products import schemas
