@@ -18,7 +18,7 @@ class CartItemRepository(BaseRepository[CartItem]):
     def __init__(self, db: Session):
         super().__init__(CartItem, db)
 
-    def get_cart_items_by_user_id(self, user_id: str) -> List[tuple[CartItem, Product]]:
+    def get_user_cart_items(self, user_id: str) -> List[tuple[CartItem, Product]]:
         """Get all cart items for a specific user by user_id.
 
         Args:
@@ -34,7 +34,7 @@ class CartItemRepository(BaseRepository[CartItem]):
             .all()
         )
 
-    def get_cart_item_by_user_and_product(
+    def get_product_from_user_cart(
         self, user_id: str, product_id: str
     ) -> Optional[CartItem]:
         """Get a specific cart item by user_id and product_id.
@@ -51,16 +51,11 @@ class CartItemRepository(BaseRepository[CartItem]):
         """
         return (
             self.db.query(self.model)
-            .filter(
-                self.model.user_id == user_id,
-                self.model.product_id == product_id
-            )
+            .filter(self.model.user_id == user_id, self.model.product_id == product_id)
             .first()
         )
 
-    def get_cart_item_by_id_and_user(
-        self, item_id: str, user_id: str
-    ) -> Optional[CartItem]:
+    def get_user_cart_item(self, item_id: str, user_id: str) -> Optional[CartItem]:
         """Get a cart item by its ID and verify it belongs to the user.
 
         This is needed for security - to ensure users can only update/delete
@@ -71,33 +66,30 @@ class CartItemRepository(BaseRepository[CartItem]):
             user_id (str): The ID of the user.
 
         Returns:
-            CartItem | None: The cart item if found and belongs to user, None otherwise.
+        Optional[CartItem]: The cart item if found and belongs to user, None otherwise.
         """
         return (
             self.db.query(self.model)
-            .filter(
-                self.model.id == item_id,
-                self.model.user_id == user_id
-            )
+            .filter(self.model.id == item_id, self.model.user_id == user_id)
             .first()
         )
 
     def update_cart_item_quantity(
-        self, item_id: str, quantity: int
+        self, item_id: str, user_id: str, quantity: int
     ) -> Optional[CartItem]:
-        """Update the quantity of a cart item.
+        """Update the quantity of a cart item for a specific user.
 
-        This is a more efficient way to update just the quantity field
-        without needing to pass the entire object.
+        This method retrieves the cart item for the user and updates its quantity.
 
         Args:
             item_id (str): The ID of the cart item.
-            quantity (int): The new quantity value.
+            user_id (str): The ID of the user.
+            quantity (int): The new quantity to set.
 
         Returns:
-            CartItem | None: The updated cart item if found, None otherwise.
+            Optional[CartItem]: The updated cart item if found, None otherwise.
         """
-        cart_item = self.get(item_id)
+        cart_item = self.get_user_cart_item(item_id, user_id)
         if cart_item:
             cart_item.quantity = quantity
             self.db.commit()
@@ -105,7 +97,6 @@ class CartItemRepository(BaseRepository[CartItem]):
             return cart_item
         return None
 
-    # delete all cart items for that user_id
     def delete_cart_items_by_user_id(self, user_id: str) -> None:
         """Delete all cart items for a specific user by user_id.
 
