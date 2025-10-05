@@ -15,7 +15,7 @@ class CartItemBase(BaseModel):
     quantity: int = Field(gt=0, description="Quantity must be greater than zero")
 
 
-class CartItemResponse(BaseResponseModel):
+class CartItemResponseData(BaseModel):
     id: str 
     user_id: str
     product_id: str
@@ -36,7 +36,13 @@ class CartItemUpdateRequest(BaseModel):
 
 
 # list
-class CartItemListResponse(BaseResponseModel):
+class CartItemListResponseData(BaseModel):
     total_cart_value: float
     items_count: int  # Added count for convenience
-    data: list[CartItemResponse]
+    items: list[CartItemResponseData]
+
+class CartItemResponse(BaseResponseModel):
+    data: CartItemResponseData
+
+class CartItemListResponse(BaseResponseModel):
+    data: CartItemListResponseData

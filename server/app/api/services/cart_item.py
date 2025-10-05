@@ -21,7 +21,7 @@ class CartItemService:
 
     def add_item_to_cart(
         self, current_user: User, schema: schemas.CartItemCreateRequest
-    ) -> schemas.CartItemResponse:
+    ) -> schemas.CartItemResponseData:
         """
         Adds an item to the user's cart. If the item already exists in the cart, it updates the quantity.
         
@@ -97,7 +97,7 @@ class CartItemService:
                 )
 
         total_price = float(product.price) * cart_item.quantity
-        return schemas.CartItemResponse(
+        return schemas.CartItemResponseData(
             id=cart_item.id,
             user_id=cart_item.user_id,
             product_id=cart_item.product_id,
@@ -112,7 +112,7 @@ class CartItemService:
             created_at=str(cart_item.created_at),
         )
 
-    def get_user_cart(self, current_user: User) -> schemas.CartItemListResponse:
+    def get_user_cart(self, current_user: User) -> schemas.CartItemListResponseData:
         """
         Retrieves all cart items for the current user along with the total cart value.
         
@@ -130,7 +130,7 @@ class CartItemService:
             total_price = float(product.price) * cart_item.quantity
             total_cart_value += total_price
             cart_items_response.append(
-                schemas.CartItemResponse(
+                schemas.CartItemResponseData(
                     id=cart_item.id,
                     user_id=cart_item.user_id,
                     product_id=cart_item.product_id,
@@ -147,15 +147,15 @@ class CartItemService:
             )
 
         logger.info(f"Retrieved cart for user {current_user.id} with {len(cart_items_response)} items")
-        return schemas.CartItemListResponse(
+        return schemas.CartItemListResponseData(
             total_cart_value=total_cart_value, 
             items_count=len(cart_items_response),
-            data=cart_items_response
+            items=cart_items_response
         )
 
     def update_cart_item(
         self, item_id: str, current_user: User, schema: schemas.CartItemUpdateRequest
-    ) -> schemas.CartItemResponse:
+    ) -> schemas.CartItemResponseData:
         """
         Updates the quantity of a cart item for the current user.
         
@@ -214,7 +214,7 @@ class CartItemService:
             )
 
         total_price = float(product.price) * cart_item.quantity
-        return schemas.CartItemResponse(
+        return schemas.CartItemResponseData(
             id=cart_item.id,
             user_id=cart_item.user_id,
             product_id=cart_item.product_id,

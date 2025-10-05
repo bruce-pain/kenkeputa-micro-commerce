@@ -11,17 +11,6 @@ from app.db.database import get_db
 
 products = APIRouter(prefix="/products")
 
-
-def _serialize_product(product: Product) -> schemas.ProductResponseData:
-    return schemas.ProductResponseData(
-        id=product.id,
-        name=product.name,
-        description=product.description,
-        price=product.price,
-        stock=product.stock,
-    )
-
-
 @products.get(
     path="",
     status_code=status.HTTP_200_OK,
@@ -49,7 +38,7 @@ def list_products(
         page=page,
         page_size=limit,
     )
-    result.items = [_serialize_product(item) for item in result.items]
+    result.items = [schemas.ProductResponseData(**item.to_dict()) for item in result.items]
     return schemas.ProductListResponse(
         status_code=status.HTTP_200_OK,
         message="Products retrieved successfully",
@@ -75,7 +64,7 @@ def create_product(
     return schemas.ProductResponse(
         status_code=status.HTTP_201_CREATED,
         message="Product created successfully",
-        data=_serialize_product(product),
+        data=schemas.ProductResponseData(**product.to_dict()),
     )
 
 
@@ -97,7 +86,7 @@ def retrieve_product(
     return schemas.ProductResponse(
         status_code=status.HTTP_200_OK,
         message="Product retrieved successfully",
-        data=_serialize_product(product),
+        data=schemas.ProductResponseData(**product.to_dict()),
     )
 
 
@@ -120,7 +109,7 @@ def update_product(
     return schemas.ProductResponse(
         status_code=status.HTTP_200_OK,
         message="Product updated successfully",
-        data=_serialize_product(product),
+        data=schemas.ProductResponseData(**product.to_dict()),
     )
 
 
