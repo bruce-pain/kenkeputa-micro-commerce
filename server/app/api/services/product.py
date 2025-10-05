@@ -57,8 +57,10 @@ class ProductService:
                 detail="Product not found!",
             )
         return product
-    
-    def update_product(self, product_id: str, schema: schemas.ProductUpdateRequest) -> Product:
+
+    def update_product(
+        self, product_id: str, schema: schemas.ProductUpdateRequest
+    ) -> Product:
         """Updates a product by its ID
         Args:
             product_id (str): The ID of the product to update
@@ -72,7 +74,7 @@ class ProductService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Product not found!",
             )
-        
+
         # check if product with name already exists
         if schema.name and schema.name != product.name:
             if self.repository.get_by_name(schema.name):
@@ -94,7 +96,7 @@ class ProductService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Error updating product",
             )
-        
+
     def delete_product(self, product_id: str) -> None:
         """Deletes a product by its ID
         Args:
@@ -108,7 +110,7 @@ class ProductService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Product not found!",
             )
-        
+
         try:
             logger.info(f"Deleting product with id: {product.id}")
             self.repository.delete(product_id)
@@ -118,7 +120,7 @@ class ProductService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Error deleting product",
             )
-        
+
     def list_products(
         self,
         name: str | None = None,
@@ -139,7 +141,7 @@ class ProductService:
         Returns:
             list[Product]: A list of products matching the filters and pagination
         """
-        
+
         query = self.repository.base_query()
 
         # apply filters
@@ -150,9 +152,9 @@ class ProductService:
         if min_price is not None and max_price is not None:
             query = self.repository.get_by_price_range(query, min_price, max_price)
         if min_price is not None and max_price is None:
-            query = self.repository.get_by_price_range(query, min_price, float('inf'))
+            query = self.repository.get_by_price_range(query, min_price, float("inf"))
         if min_price is None and max_price is not None:
             query = self.repository.get_by_price_range(query, 0, max_price)
-        
+
         # apply pagination and return
         return self.repository.paginate(query, page, page_size)

@@ -16,7 +16,7 @@ class CartItemRepository(BaseRepository[CartItem]):
     """
 
     def __init__(self, db: Session):
-        super().__init__(CartItem, db)
+        super().__init__(CartItem, db)  
 
     def get_user_cart_items(self, user_id: str) -> List[tuple[CartItem, Product]]:
         """Get all cart items for a specific user by user_id.
