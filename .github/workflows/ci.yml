@@ -52,6 +52,6 @@ jobs:
           poetry run ruff check ./app ./tests --output-format=github
 
       # Run tests
-      # - name: Run Pytest
-      #   run: |
-      #     poetry run pytest -v --disable-warnings
+      - name: Run Pytest
+        run: |
+          poetry run pytest -v --disable-warnings
