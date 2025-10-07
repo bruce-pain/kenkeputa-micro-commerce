@@ -12,12 +12,11 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 
-from app.main import app as fastapi_app
-from app.db.database import get_db
-from app.core.base.model import BaseTableModel
+from app.main import app as fastapi_app # noqa: E402
+from app.db.database import get_db # noqa: E402
+from app.core.base.model import BaseTableModel  # noqa: E402
 
-import app.api.models  # ensure models registered
-
+import app.api.models  # noqa: F401 E402
 
 engine = create_engine(
     "sqlite:///:memory:",
